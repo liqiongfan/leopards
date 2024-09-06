@@ -29,6 +29,7 @@ type Column struct {
 	ColumnKey              string  `json:"COLUMN_KEY"`
 	Extra                  *string `json:"EXTRA"`
 	ColumnComment          string  `json:"COLUMN_COMMENT"`
+	CamelName              string
 }
 
 const TemplateStruct = `
@@ -45,7 +46,7 @@ const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ $value.Comment }}
 type {{ camel $value.TableName }} struct { 
-{{ range .Columns }}    {{ camel .ColumnName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment}}
+{{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment  }}
 {{ end -}} 
 }
 {{ end }}
@@ -108,13 +109,15 @@ func generate(cmd *cobra.Command, args []string) error {
 		flags := make(map[string]struct{}, len(columns))
 		for i, column := range columns {
 			camelName := camel(column.ColumnName)
+			columns[i].CamelName = camelName
 			if _, ok := flags[camelName]; ok {
 				tName := snake(camelName)
 				column.ColumnName = &tName
-				columns[i].ColumnName = &tName
+				columns[i].CamelName = tName
 			} else {
 				flags[camelName] = struct{}{}
 			}
+
 			if Type(column.DataType, column.ColumnComment, column.IsNullable) == `time.Time` {
 				needImportTime = true
 			}
