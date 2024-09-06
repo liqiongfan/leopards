@@ -153,7 +153,9 @@ OrderBy(leopards.Asc(`id`))
 
 + Having(*Predicate)
 
+```go
 用法与 `Where` 一致
+```
 
 ### LIMIT 语句
 
