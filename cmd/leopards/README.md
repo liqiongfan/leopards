@@ -2,9 +2,9 @@
 
 A tool for generate database struct for database.
 
-+ MySQL    yes, support
-+ Postgres no , on-planning
-
++ [x] MySQL      yes
++ [ ] Postgres   planing
++ [ ] SQLite     planing
 
 ### MySQL
 

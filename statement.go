@@ -2390,6 +2390,9 @@ func (s *Selector) Scan(ctx context.Context, dest any) error {
 	}
 
 	err = s.driver.Scan(rows, dest)
+	if err != nil {
+		_ = rows.Close()
+	}
 
 	for _, iter := range s.driver.afterQuery {
 		iter(s, dest)

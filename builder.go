@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type rowScan struct {
@@ -329,13 +331,14 @@ func (b *DB) Scan(rows *sql.Rows, dest any) error {
 
 // OpenOptions 链接选项
 type OpenOptions struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	Database string
-	Debug    bool
-	Dialect  string
+	User          string // 用户
+	Password      string // 密码
+	Host          string // 主机
+	Port          string // 端口
+	Database      string // 数据库
+	Debug         bool   // 调试模式
+	Dialect       string // 数据库类型, 可选 leopards.MySQL | leopards.SQLite | leopards.Postgres | leopards.Gremlin
+	FileForSQLite string // SQLite 数据库需要配置, 其他类型忽略
 }
 
 // Open 打开链接获取一个DB操作类
@@ -352,14 +355,18 @@ func (p OpenOptions) Open() (*DB, error) {
 }
 
 func DSN(opt *OpenOptions) string {
-	return fmt.Sprintf(
-		`%s:%s@(%s:%s)/%s?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`,
-		opt.User,
-		opt.Password,
-		opt.Host,
-		opt.Port,
-		opt.Database,
-	)
+	switch opt.Dialect {
+	case MySQL:
+		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`
+	case Postgres: // host=<host> port=<port> user=<user> dbname=<database> password=<pass>
+		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User + ` dbname=` + opt.Database + ` password=` + opt.Password
+	case SQLite: //  file:ent?mode=memory&cache=shared&_fk=1
+		return opt.FileForSQLite + `?mode=memory&cache=shared`
+	case Gremlin: // http://localhost:8182
+		return opt.Host + `:` + opt.Port
+	default:
+		panic(`DSN: unsupported dialect type.`)
+	}
 }
 
 func Open(dialect string, dsn string) (*DB, error) {

@@ -3,7 +3,9 @@
 An ORM for Goer, forking from facebook's `ent` framework.
 
 
-## leopards cli command
+## leopards command
+
+leopards 工具用来生成操作数据库的表结构信息, 安装命令：
 
 ```shell
 go install github.com/liqiongfan/leopards/cmd/leopards@latest
@@ -12,12 +14,34 @@ go install github.com/liqiongfan/leopards/cmd/leopards@latest
 > [!TIP]
 > Table struct and table name should be maintained by leopards. 
 
-
 [click to view docs](https://github.com/liqiongfan/leopards/tree/main/cmd/leopards)
 
 
+## ORM实例
+
 ```go
-	db, err := leopards.OpenOptions{
+
+package main
+
+import (
+	"context"
+	
+	"github.com/liqiongfan/leopards"
+	
+	"time"
+)
+
+// User 表结构, 理论上表结构应该使用 leopards 命令生成，避免维护问题
+type User struct {
+    Id int `json:"id"`
+	Name string `json:"name"`
+	Age int `json:"age"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func main() {
+	orm, err := leopards.OpenOptions{
 		User:     "用户名",
 		Password: "密码",
 		Host:     "账号",
@@ -26,90 +50,34 @@ go install github.com/liqiongfan/leopards/cmd/leopards@latest
 		Debug:    true, // 是否开启调试，开启调试会输出SQL到标准输出
 		Dialect:  leopards.MySQL,
 	}.Open()
-
-```
-
-
-### 中间件
-
-![img.png](img.png)
-
-
-+ InterceptorsQuery 添加一个前置查询中间件
-+ InterceptorsAfterQuery 添加一个后置查询中间件
-+ InterceptorsInsert 添加一个前置插入中间件
-+ InterceptorsAfterInsert 添加一个后置插入中间件
-+ InterceptorsUpdate 添加一个前置更新中间件
-+ InterceptorsAfterUpdate 添加一个后置更新中间件
-+ InterceptorsDelete 添加一个前置删除中间件
-+ InterceptorsAfterDelete 添加一个后置删除中间件
-
-
-### 增删改查
-
-+ Query  查询
-+ Update 更新
-+ Insert 插入
-+ Delete 删除
-
-
-### 实例
-
-```go
-dest := make([]User, 0, 30)
-err := db.Query().Select(`id`, `count(*) as count`).From(`user`).Scan(context.TODO(), &dest)
-for _, user := range dest {
-	println("用户ID: ", user.Id, " 姓名: ", user.Name)
-}
-```
-
-
-### 内嵌结构体非指针
-
-```go
-
-type User struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
-	Address string `json:"address"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type UserCount struct {
-	User // 内嵌结构体 leopards 支持赋值，不限制层级，不能使用指针类型，限制结构体
-	Count int `json:"count"`
-}
-
-out := make([]UserCount, 0, 15)
-err = db.Query().
-    Select(`*`, `count(*) as count`).
-    From(`users`).
-    GroupBy(`id`).
-    Scan(ctx, &out)
-if err != nil {
-    panic(err)
+	if err != nil {
+        panic(err)
+	}
+	
+	users := make([]User, 0, 10)
+	err = orm.Query().Select().From(`user`).Scan(context.TODO(), &users)
+	if err != nil {
+        panic(err)
+	}
+	
+	for _, user := range users {
+		println(`ID:`, user.Id, ` Name:`, user.Name, ` Age:`, user.Age)
+    }
 }
 
 ```
 
->[!WARNING]
-> 错误写法:
-> 
-> type UserCount struct {
->    *User
-> }
+## 章节明细
+
++ [leopards cli command](docs/cli/cli.md)
++ [SQL query statement](docs/query/query.md)
++ [SQL delete statement](docs/delete/delete.md)
++ [SQL insert statement](docs/insert/insert.md)
++ [SQL update statement](docs/update/update.md)
++ [interceptors](docs/interceptors/interceptors.md)
 
 
-
-
-
-
-
-
-
-
-
+## 
 
 
 
