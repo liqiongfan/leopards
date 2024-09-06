@@ -40,6 +40,9 @@ const TemplateStruct = `
 {{- range .Columns }} {{ enum .ColumnName .DataType .ColumnType }}    
 {{- end }}
 
+// {{ camel $value.TableName }}Table {{ $value.Comment }}
+type {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
+
 // {{ camel $value.TableName }} {{ $value.Comment }}
 type {{ camel $value.TableName }} struct { 
 {{ range .Columns }}    {{ camel .ColumnName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment}}
@@ -182,7 +185,7 @@ func generate(cmd *cobra.Command, args []string) error {
 
 var mysqlCMD = &cobra.Command{
 	Use:   `mysql database table [-h]`,
-	Short: `An MySQL schema generate tool for leopard`,
+	Short: `An MySQL schema generate tool for leopards`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		return generate(cmd, args)
