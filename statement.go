@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Dialect names for external usage.
@@ -680,7 +681,7 @@ func (i *InsertBuilder) Save(ctx context.Context) (sql.Result, error) {
 	statement, args := i.query()
 
 	if i.driver.debug {
-		fmt.Printf("%s %v\n", statement, args)
+		fmt.Printf("%s: %s %v\n", time.Now().Format(`2006-01-02 15:04:05`), statement, args)
 	}
 
 	var (
@@ -1141,7 +1142,7 @@ func (u *UpdateBuilder) Save(ctx context.Context) (sql.Result, error) {
 	statement, args := u.query()
 
 	if u.driver.debug {
-		fmt.Printf("%s %v\n", statement, args)
+		fmt.Printf("%s: %s %v\n", time.Now().Format(`2006-01-02 15:04:05`), statement, args)
 	}
 
 	var (
@@ -1327,7 +1328,7 @@ func (d *DeleteBuilder) Exec(ctx context.Context) (sql.Result, error) {
 	statement, args := d.query()
 
 	if d.driver.debug {
-		fmt.Printf("%s %v\n", statement, args)
+		fmt.Printf("%s: %s %v\n", time.Now().Format(`2006-01-02 15:04:05`), statement, args)
 	}
 
 	var (
@@ -2376,7 +2377,7 @@ func (s *Selector) Scan(ctx context.Context, dest any) error {
 	statement, args := s.query()
 
 	if s.driver.debug {
-		fmt.Printf("%s %v\n", statement, args)
+		fmt.Printf("%s: %s %v\n", time.Now().Format(`2006-01-02 15:04:05`), statement, args)
 	}
 
 	if s.driver.tx != nil {
