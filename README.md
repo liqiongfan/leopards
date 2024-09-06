@@ -10,11 +10,13 @@ go install github.com/liqiongfan/leopards/cmd/leopards@latest
 ```
 
 > [!TIP]
-> Table struct and table name should be maintained by leopards.
+> Table struct and table name should be maintained by leopards. 
 
 
-```Open title="leopards"
+[click to view docs](https://github.com/liqiongfan/leopards/tree/main/cmd/leopards)
 
+
+```go
 	db, err := leopards.OpenOptions{
 		User:     "用户名",
 		Password: "密码",
@@ -53,7 +55,7 @@ go install github.com/liqiongfan/leopards/cmd/leopards@latest
 
 ### 实例
 
-```go title="leopards"
+```go
 dest := make([]User, 0, 30)
 err := db.Query().Select(`id`, `count(*) as count`).From(`user`).Scan(context.TODO(), &dest)
 for _, user := range dest {
@@ -64,7 +66,7 @@ for _, user := range dest {
 
 ### 内嵌结构体非指针
 
-```go title="leopards"
+```go
 
 type User struct {
 	Id int `json:"id"`
@@ -92,12 +94,11 @@ if err != nil {
 ```
 
 >[!WARNING]
-
-> ```go title="错误写法"
-type UserCount struct {
-    *User
-}
-```
+> 错误写法:
+> 
+> type UserCount struct {
+>    *User
+> }
 
 
 
