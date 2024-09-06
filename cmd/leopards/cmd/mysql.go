@@ -121,7 +121,7 @@ func generate(cmd *cobra.Command, args []string) error {
 			if Type(column.DataType, column.ColumnComment, column.IsNullable) == `time.Time` {
 				needImportTime = true
 			}
-			if length := len(camel(column.ColumnName)); length > tables[i].MaxColumnLength {
+			if length := len(camel(&column.CamelName)); length > tables[i].MaxColumnLength {
 				tables[i].MaxColumnLength = length
 			}
 			if length := len(Type(column.DataType, column.ColumnType, column.IsNullable)); length > tables[i].MaxTypeLength {
