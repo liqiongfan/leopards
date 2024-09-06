@@ -9,9 +9,8 @@ An ORM for Goer, forking from facebook's `ent` framework.
 go install github.com/liqiongfan/leopards/cmd/leopards@latest
 ```
 
-:::tips
-Table struct and table name should be maintained by leopards.
-:::
+> [!TIP]
+> Table struct and table name should be maintained by leopards.
 
 
 ```Open title="leopards"
@@ -92,15 +91,13 @@ if err != nil {
 
 ```
 
-:::warning
+>[!WARNING]
 
-```go title="错误写法"
+> ```go title="错误写法"
 type UserCount struct {
     *User
 }
 ```
-
-:::
 
 
 
