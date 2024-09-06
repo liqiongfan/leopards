@@ -3,7 +3,18 @@
 An ORM for Goer, forking from facebook's `ent` framework.
 
 
-```Open title="hello.go"
+## leopards cli command
+
+```shell
+go install github.com/liqiongfan/leopards/cmd/leopards@latest
+```
+
+:::tips
+Table struct and table name should be maintained by leopards.
+:::
+
+
+```Open title="leopards"
 
 	db, err := leopards.OpenOptions{
 		User:     "用户名",
@@ -43,12 +54,53 @@ An ORM for Goer, forking from facebook's `ent` framework.
 
 ### 实例
 
-```go
+```go title="leopards"
 dest := make([]User, 0, 30)
 err := db.Query().Select(`id`, `count(*) as count`).From(`user`).Scan(context.TODO(), &dest)
+for _, user := range dest {
+	println("用户ID: ", user.Id, " 姓名: ", user.Name)
+}
 ```
 
 
+### 内嵌结构体非指针
+
+```go title="leopards"
+
+type User struct {
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Address string `json:"address"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserCount struct {
+	User // 内嵌结构体 leopards 支持赋值，不限制层级，不能使用指针类型，限制结构体
+	Count int `json:"count"`
+}
+
+out := make([]UserCount, 0, 15)
+err = db.Query().
+    Select(`*`, `count(*) as count`).
+    From(`users`).
+    GroupBy(`id`).
+    Scan(ctx, &out)
+if err != nil {
+    panic(err)
+}
+
+```
+
+:::warning
+
+```go title="错误写法"
+type UserCount struct {
+    *User
+}
+```
+
+:::
 
 
 
