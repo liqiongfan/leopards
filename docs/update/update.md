@@ -15,3 +15,6 @@ SetMap(map[string]any{
 })
 ```
 
+## Where(*Predicate)
+
+[同 `Query` 部分](../query/query.md)
