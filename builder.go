@@ -327,6 +327,41 @@ func (b *DB) Scan(rows *sql.Rows, dest any) error {
 	return nil
 }
 
+// OpenOptions 链接选项
+type OpenOptions struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	Database string
+	Debug    bool
+	Dialect  string
+}
+
+// Open 打开链接获取一个DB操作类
+func (p OpenOptions) Open() (*DB, error) {
+	dri, err := sql.Open(p.Dialect, DSN(&p))
+	if err != nil {
+		return nil, err
+	}
+	b := &DB{}
+	b.driver = dri
+	b.dialect = p.Dialect
+	b.debug = p.Debug
+	return b, nil
+}
+
+func DSN(opt *OpenOptions) string {
+	return fmt.Sprintf(
+		`%s:%s@(%s:%s)/%s?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`,
+		opt.User,
+		opt.Password,
+		opt.Host,
+		opt.Port,
+		opt.Database,
+	)
+}
+
 func Open(dialect string, dsn string) (*DB, error) {
 	dri, err := sql.Open(dialect, dsn)
 	if err != nil {
@@ -339,15 +374,18 @@ func Open(dialect string, dsn string) (*DB, error) {
 }
 
 func OpenWithInfo(dialect, host, port, user, password, database string) (*DB, error) {
-	dsn := fmt.Sprintf(
-		`%s:%s@(%s:%s)/%s?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`,
-		user,
-		password,
-		host,
-		port,
-		database,
+	return Open(
+		dialect,
+		DSN(&OpenOptions{
+			User:     user,
+			Password: password,
+			Host:     host,
+			Port:     port,
+			Database: database,
+			Debug:    false,
+			Dialect:  dialect,
+		}),
 	)
-	return Open(dialect, dsn)
 }
 
 func OpenWithDebug(dialect, dsn string) (*DB, error) {

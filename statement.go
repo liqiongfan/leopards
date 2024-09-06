@@ -21,9 +21,9 @@ const (
 // Querier wraps the basic Query method that is implemented
 // by the different builders in this file.
 type Querier interface {
-	// Query returns the query representation of the element
+	// query returns the query representation of the element
 	// and its arguments (if any).
-	Query() (string, []any)
+	query() (string, []any)
 }
 
 // querierErr allowed propagate Querier's inner error
@@ -75,7 +75,7 @@ func (c *ColumnBuilder) Check(check func(*Builder)) *ColumnBuilder {
 }
 
 // Query returns query representation of a Column.
-func (c *ColumnBuilder) Query() (string, []any) {
+func (c *ColumnBuilder) query() (string, []any) {
 	c.Ident(c.name)
 	if c.typ != "" {
 		if c.postgres() && c.modify {
@@ -197,13 +197,13 @@ func (t *TableBuilder) Options(s string) *TableBuilder {
 	return t
 }
 
-// Query returns query representation of a `CREATE TABLE` statement.
+// query returns query representation of a `CREATE TABLE` statement.
 //
 // CREATE TABLE [IF NOT EXISTS] name
 //
 //	(table definition)
 //	[charset and collation]
-func (t *TableBuilder) Query() (string, []any) {
+func (t *TableBuilder) query() (string, []any) {
 	t.WriteString("CREATE TABLE ")
 	if t.exists {
 		t.WriteString("IF NOT EXISTS ")
@@ -247,8 +247,8 @@ type DescribeBuilder struct {
 //	Describe("users")
 func Describe(name string) *DescribeBuilder { return &DescribeBuilder{name: name} }
 
-// Query returns query representation of a `DESCRIBE` statement.
-func (t *DescribeBuilder) Query() (string, []any) {
+// query returns query representation of a `DESCRIBE` statement.
+func (t *DescribeBuilder) query() (string, []any) {
 	t.WriteString("DESCRIBE ")
 	t.Ident(t.name)
 	return t.String(), nil
@@ -365,7 +365,7 @@ func (t *TableAlter) DropForeignKey(ident string) *TableAlter {
 //
 //	ALTER TABLE name
 //		[alter_specification]
-func (t *TableAlter) Query() (string, []any) {
+func (t *TableAlter) query() (string, []any) {
 	t.WriteString("ALTER TABLE ")
 	t.Ident(t.name)
 	t.Pad()
@@ -396,7 +396,7 @@ func (i *IndexAlter) Rename(name string) *IndexAlter {
 //
 //	ALTER INDEX name
 //		[alter_specification]
-func (i *IndexAlter) Query() (string, []any) {
+func (i *IndexAlter) query() (string, []any) {
 	i.WriteString("ALTER INDEX ")
 	i.Ident(i.name)
 	i.Pad()
@@ -458,7 +458,7 @@ func (fk *ForeignKeyBuilder) OnUpdate(action string) *ForeignKeyBuilder {
 }
 
 // Query returns query representation of a foreign key constraint.
-func (fk *ForeignKeyBuilder) Query() (string, []any) {
+func (fk *ForeignKeyBuilder) query() (string, []any) {
 	if fk.symbol != "" {
 		fk.Ident(fk.symbol).Pad()
 	}
@@ -498,7 +498,7 @@ func (r *ReferenceBuilder) Columns(s ...string) *ReferenceBuilder {
 }
 
 // Query returns query representation of a reference clause.
-func (r *ReferenceBuilder) Query() (string, []any) {
+func (r *ReferenceBuilder) query() (string, []any) {
 	r.WriteString("REFERENCES ")
 	r.Ident(r.table)
 	r.Wrap(func(b *Builder) {
@@ -572,7 +572,7 @@ func (i *IndexBuilder) Columns(columns ...string) *IndexBuilder {
 }
 
 // Query returns query representation of a reference clause.
-func (i *IndexBuilder) Query() (string, []any) {
+func (i *IndexBuilder) query() (string, []any) {
 	i.WriteString("CREATE ")
 	if i.unique {
 		i.WriteString("UNIQUE ")
@@ -637,7 +637,7 @@ func (d *DropIndexBuilder) Table(table string) *DropIndexBuilder {
 // Query returns query representation of a reference clause.
 //
 //	DROP INDEX index_name [ON table_name]
-func (d *DropIndexBuilder) Query() (string, []any) {
+func (d *DropIndexBuilder) query() (string, []any) {
 	d.WriteString("DROP INDEX ")
 	d.Ident(d.name)
 	if d.table != "" {
@@ -677,7 +677,7 @@ func (i *InsertBuilder) Save(ctx context.Context) (sql.Result, error) {
 		iter(i)
 	}
 
-	statement, args := i.Query()
+	statement, args := i.query()
 
 	if i.driver.debug {
 		fmt.Printf("%s %v\n", statement, args)
@@ -992,7 +992,7 @@ func (u *UpdateSet) SetExcluded(name string) *UpdateSet {
 }
 
 // Query returns query representation of an `INSERT INTO` statement.
-func (i *InsertBuilder) Query() (string, []any) {
+func (i *InsertBuilder) query() (string, []any) {
 	query, args, _ := i.QueryErr()
 	return query, args
 }
@@ -1138,7 +1138,7 @@ func (u *UpdateBuilder) Save(ctx context.Context) (sql.Result, error) {
 		iter(u)
 	}
 
-	statement, args := u.Query()
+	statement, args := u.query()
 
 	if u.driver.debug {
 		fmt.Printf("%s %v\n", statement, args)
@@ -1245,8 +1245,8 @@ func (u *UpdateBuilder) Returning(columns ...string) *UpdateBuilder {
 	return u
 }
 
-// Query returns query representation of an `UPDATE` statement.
-func (u *UpdateBuilder) Query() (string, []any) {
+// query returns query representation of an `UPDATE` statement.
+func (u *UpdateBuilder) query() (string, []any) {
 	b := u.Builder.clone()
 	if len(u.prefix) > 0 {
 		b.join(u.prefix, " ")
@@ -1324,7 +1324,7 @@ func (d *DeleteBuilder) Exec(ctx context.Context) (sql.Result, error) {
 		iter(d)
 	}
 
-	statement, args := d.Query()
+	statement, args := d.query()
 
 	if d.driver.debug {
 		fmt.Printf("%s %v\n", statement, args)
@@ -1410,7 +1410,7 @@ func (d *DeleteBuilder) FromSelect(s *Selector) *DeleteBuilder {
 }
 
 // Query returns query representation of a `DELETE` statement.
-func (d *DeleteBuilder) Query() (string, []any) {
+func (d *DeleteBuilder) query() (string, []any) {
 	d.WriteString("DELETE FROM ")
 	d.writeSchema(d.schema)
 	d.Ident(d.table)
@@ -2040,8 +2040,8 @@ func (p *Predicate) Append(f func(*Builder)) *Predicate {
 	return p
 }
 
-// Query returns query representation of a predicate.
-func (p *Predicate) Query() (string, []any) {
+// query returns query representation of a predicate.
+func (p *Predicate) query() (string, []any) {
 	if p.Len() > 0 || len(p.args) > 0 {
 		p.Reset()
 		p.args = nil
@@ -2373,7 +2373,7 @@ func (s *Selector) Scan(ctx context.Context, dest any) error {
 		iter(s)
 	}
 
-	statement, args := s.Query()
+	statement, args := s.query()
 
 	if s.driver.debug {
 		fmt.Printf("%s %v\n", statement, args)
@@ -3210,7 +3210,7 @@ func (s *Selector) Having(p *Predicate) *Selector {
 }
 
 // Query returns query representation of a `SELECT` statement.
-func (s *Selector) Query() (string, []any) {
+func (s *Selector) query() (string, []any) {
 	b := s.Builder.clone()
 	s.joinPrefix(&b)
 	b.WriteString("SELECT ")
@@ -3462,7 +3462,7 @@ func (w *WithBuilder) C(column string) string {
 }
 
 // Query returns query representation of a `WITH` clause.
-func (w *WithBuilder) Query() (string, []any) {
+func (w *WithBuilder) query() (string, []any) {
 	w.WriteString("WITH ")
 	if w.recursive {
 		w.WriteString("RECURSIVE ")
@@ -3553,7 +3553,7 @@ func (w *WindowBuilder) OrderExpr(exprs ...Querier) *WindowBuilder {
 }
 
 // Query returns query representation of the window function.
-func (w *WindowBuilder) Query() (string, []any) {
+func (w *WindowBuilder) query() (string, []any) {
 	w.fn(&w.Builder)
 	w.WriteString(" OVER ")
 	w.Wrap(func(b *Builder) {
@@ -3574,8 +3574,8 @@ type Wrapper struct {
 }
 
 // Query returns query representation of a wrapped Querier.
-func (w *Wrapper) Query() (string, []any) {
-	query, args := w.wrapped.Query()
+func (w *Wrapper) query() (string, []any) {
+	query, args := w.wrapped.query()
 	return fmt.Sprintf(w.format, query), args
 }
 
@@ -3615,7 +3615,7 @@ func Raw(s string) Querier { return &raw{s} }
 
 type raw struct{ s string }
 
-func (r *raw) Query() (string, []any) { return r.s, nil }
+func (r *raw) query() (string, []any) { return r.s, nil }
 
 // Expr returns an SQL expression that implements the Querier interface.
 func Expr(exr string, args ...any) Querier { return &expr{s: exr, args: args} }
@@ -3625,7 +3625,7 @@ type expr struct {
 	args []any
 }
 
-func (e *expr) Query() (string, []any) { return e.s, e.args }
+func (e *expr) query() (string, []any) { return e.s, e.args }
 
 // ExprFunc returns an expression function that implements the Querier interface.
 //
@@ -3644,23 +3644,23 @@ type exprFunc struct {
 	fn func(*Builder)
 }
 
-func (e *exprFunc) Query() (string, []any) {
+func (e *exprFunc) query() (string, []any) {
 	b := e.Builder.clone()
 	e.fn(&b)
-	return b.Query()
+	return b.query()
 }
 
 // Queries are list of queries join with space between them.
 type Queries []Querier
 
 // Query returns query representation of Queriers.
-func (n Queries) Query() (string, []any) {
+func (n Queries) query() (string, []any) {
 	b := &Builder{}
 	for i := range n {
 		if i > 0 {
 			b.Pad()
 		}
-		query, args := n[i].Query()
+		query, args := n[i].query()
 		b.WriteString(query)
 		b.args = append(b.args, args...)
 	}
@@ -3973,7 +3973,7 @@ func (b *Builder) join(qs []Querier, sep string) *Builder {
 			st.SetDialect(b.dialect)
 			st.SetTotal(b.total)
 		}
-		query, args := q.Query()
+		query, args := q.query()
 		b.WriteString(query)
 		b.args = append(b.args, args...)
 		b.total += len(args)
@@ -4026,8 +4026,8 @@ func (b *Builder) SetTotal(total int) {
 	b.total = total
 }
 
-// Query implements the Querier interface.
-func (b Builder) Query() (string, []any) {
+// query implements the Querier interface.
+func (b Builder) query() (string, []any) {
 	return b.String(), b.args
 }
 
