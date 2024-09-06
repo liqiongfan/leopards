@@ -29,7 +29,7 @@ type Column struct {
 	ColumnKey              string  `json:"COLUMN_KEY"`
 	Extra                  *string `json:"EXTRA"`
 	ColumnComment          string  `json:"COLUMN_COMMENT"`
-	CamelName              string
+	CamelName              *string
 }
 
 const TemplateStruct = `
@@ -107,13 +107,14 @@ func generate(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		flags := make(map[string]struct{}, len(columns))
-		for i, column := range columns {
+		for j, column := range columns {
 			camelName := camel(column.ColumnName)
-			columns[i].CamelName = camelName
+			column.CamelName = column.ColumnName
+			columns[j].CamelName = column.ColumnName
 			if _, ok := flags[camelName]; ok {
 				tName := snake(camelName)
 				column.ColumnName = &tName
-				columns[i].CamelName = tName
+				columns[j].CamelName = &tName
 			} else {
 				flags[camelName] = struct{}{}
 			}
@@ -121,7 +122,7 @@ func generate(cmd *cobra.Command, args []string) error {
 			if Type(column.DataType, column.ColumnComment, column.IsNullable) == `time.Time` {
 				needImportTime = true
 			}
-			if length := len(camel(&column.CamelName)); length > tables[i].MaxColumnLength {
+			if length := len(camel(column.CamelName)); length > tables[i].MaxColumnLength {
 				tables[i].MaxColumnLength = length
 			}
 			if length := len(Type(column.DataType, column.ColumnType, column.IsNullable)); length > tables[i].MaxTypeLength {
