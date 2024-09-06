@@ -165,6 +165,7 @@ func generate(cmd *cobra.Command, args []string) error {
 			packageName = filepath.Base(wd)
 		} else {
 			packageName = filepath.Base(filepath.Dir(output))
+			_ = os.MkdirAll(filepath.Dir(output), os.ModePerm)
 		}
 
 		_, _ = f.WriteString(`package ` + packageName)

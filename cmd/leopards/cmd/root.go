@@ -210,7 +210,7 @@ func getInfo(cmd *cobra.Command) *Info {
 }
 
 var RootCMD = &cobra.Command{
-	Use:   `leopard`,
+	Use:   `leopards`,
 	Short: `An funny tool for DB schema`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
