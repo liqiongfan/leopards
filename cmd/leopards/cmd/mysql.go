@@ -105,7 +105,16 @@ func generate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		for _, column := range columns {
+		flags := make(map[string]struct{}, len(columns))
+		for i, column := range columns {
+			camelName := camel(column.ColumnName)
+			if _, ok := flags[camelName]; ok {
+				tName := snake(camelName)
+				column.ColumnName = &tName
+				columns[i].ColumnName = &tName
+			} else {
+				flags[camelName] = struct{}{}
+			}
 			if Type(column.DataType, column.ColumnComment, column.IsNullable) == `time.Time` {
 				needImportTime = true
 			}

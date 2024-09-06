@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"unicode"
 
 	"github.com/spf13/cobra"
 )
@@ -43,36 +42,46 @@ func enum(columnName *string, dataType *string, columnType string) string {
 	return w.String()
 }
 
+func snake(str string) string {
+
+	first := true
+	b := strings.Builder{}
+	for _, c := range str {
+		switch {
+		case c >= 'A' && c <= 'Z' && !first:
+			b.WriteRune('_')
+			b.WriteRune('_')
+		}
+		b.WriteRune(c)
+		first = false
+	}
+
+	return b.String()
+}
+
 func camel(str *string) string {
 	v := ``
 	if str != nil {
 		v = *str
 	}
-	var upper = true
 	var b strings.Builder
+	var upperNext = true
 	for _, c := range v {
 		switch {
-		case unicode.IsLetter(c):
-			switch upper {
-			case true:
-				switch {
-				case c >= 'a' && c <= 'z':
-					b.WriteRune(c ^ 0x20)
-				default:
-					b.WriteRune(c)
-				}
-				upper = false
-			default:
-				b.WriteRune(c)
+		case c == '_' && upperNext:
+			upperNext = false
+		case c == '_' && !upperNext:
+			upperNext = true
+			continue
+		case upperNext:
+			if c >= 'a' && c <= 'z' {
+				c ^= 0x20
 			}
-		case unicode.IsDigit(c):
-			b.WriteRune(c)
-			continue
-		default:
-			upper = true
-			continue
+			upperNext = false
 		}
+		b.WriteRune(c)
 	}
+
 	return b.String()
 }
 
