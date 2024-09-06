@@ -41,7 +41,7 @@ const TemplateStruct = `
 {{- end }}
 
 // {{ camel $value.TableName }}Table {{ $value.Comment }}
-type {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
+const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ $value.Comment }}
 type {{ camel $value.TableName }} struct { 
