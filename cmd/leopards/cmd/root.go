@@ -199,20 +199,24 @@ func getInfo(cmd *cobra.Command) *Info {
 		Port:     os.Getenv(`MYSQL_PORT`),
 	}
 
-	if r.User == `` {
-		r.User, _ = cmd.Flags().GetString(`user`)
+	u, _ := cmd.Flags().GetString(`user`)
+	if u != `` {
+		r.User = u
 	}
 
-	if r.Password == `` {
-		r.Password, _ = cmd.Flags().GetString(`password`)
+	p, _ := cmd.Flags().GetString(`password`)
+	if p != `` {
+		r.Password = p
 	}
 
-	if r.Host == `` {
-		r.Host, _ = cmd.Flags().GetString(`host`)
+	h, _ := cmd.Flags().GetString(`host`)
+	if h != `` {
+		r.Host = h
 	}
 
-	if r.Port == `` {
-		r.Port, _ = cmd.Flags().GetString(`port`)
+	port, _ := cmd.Flags().GetString(`port`)
+	if port != `` {
+		r.Port = port
 	}
 
 	return r
