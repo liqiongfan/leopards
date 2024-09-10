@@ -61,14 +61,14 @@ type {{ camel $value.TableName }} struct {
 {{ end }}
 `
 
-func PGType(dataType, isNullable, udtName string) string {
+func PGType(dataType, isNullable, udtName string) (res string) {
 	switch udtName {
 	case `bigserial`:
-		return `uint64`
+		res = `uint64`
 	case `bit`:
-		return `[]byte`
+		res = `[]byte`
 	case `bool`:
-		return `byte`
+		res = `byte`
 	case `box`:
 		fallthrough
 	case `bytea`:
@@ -78,25 +78,25 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `cidr`:
 		fallthrough
 	case `circle`:
-		return `string`
+		res = `string`
 	case `date`:
-		return `time.Time`
+		res = `time.Time`
 	case `decimal`:
-		return `string`
+		res = `string`
 	case `float4`:
-		return `float32`
+		res = `float32`
 	case `float8`:
-		return `float64`
+		res = `float64`
 	case `inet`:
-		return `string`
+		res = `string`
 	case `int2`:
-		return `int16`
+		res = `int16`
 	case `int4`:
-		return `int32`
+		res = `int32`
 	case `int8`:
-		return `int64`
+		res = `int64`
 	case `interval`:
-		return `string`
+		res = `string`
 	case `json`:
 		fallthrough
 	case `jsonb`:
@@ -110,25 +110,25 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `money`:
 		fallthrough
 	case `numeric`:
-		return `string`
+		res = `string`
 	case `path`:
 		fallthrough
 	case `point`:
 		fallthrough
 	case `polygon`:
-		return `string`
+		res = `string`
 	case `serial`:
-		return `uint32`
+		res = `uint32`
 	case `serial2`:
-		return `uint16`
+		res = `uint16`
 	case `serial4`:
-		return `uint32`
+		res = `uint32`
 	case `serial8`:
-		return `uint64`
+		res = `uint64`
 	case `smallserial`:
-		return `uint16`
+		res = `uint16`
 	case `text`:
-		return `string`
+		res = `string`
 	case `time`:
 		fallthrough
 	case `timestamp`:
@@ -136,24 +136,32 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `timestamptz`:
 		fallthrough
 	case `timetz`:
-		return `time.Time`
+		res = `time.Time`
 	case `tsquery`:
 		fallthrough
 	case `tsvector`:
-		return `string`
+		res = `string`
 	case `txid_snapshot`:
-		return `string`
+		res = `string`
 	case `uuid`:
-		return `string`
+		res = `string`
 	case `varbit`:
-		return `[]byte`
+		res = `[]byte`
 	case `varchar`:
 		fallthrough
 	case `xml`:
 		fallthrough
 	default:
-		return `string`
+		res = `string`
 	}
+
+	switch isNullable {
+	case `YES`:
+		res = `*` + res
+	case `NO`:
+	}
+
+	return
 }
 
 func pgGenerate(cmd *cobra.Command, args []string) error {
