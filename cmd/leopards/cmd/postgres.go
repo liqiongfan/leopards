@@ -64,7 +64,7 @@ type {{ camel $value.TableName }} struct {
 func PGType(dataType, isNullable, udtName string) string {
 	switch udtName {
 	case `bigserial`:
-		return `int64`
+		return `uint64`
 	case `bit`:
 		return `[]byte`
 	case `bool`:
@@ -118,7 +118,7 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `polygon`:
 		return `string`
 	case `serial`:
-		return `int32`
+		return `uint32`
 	case `serial2`:
 		return `int16`
 	case `serial4`:
@@ -126,7 +126,7 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `serial8`:
 		return `int64`
 	case `smallserial`:
-		return `int16`
+		return `uint16`
 	case `text`:
 		return `string`
 	case `time`:
