@@ -120,11 +120,11 @@ func PGType(dataType, isNullable, udtName string) string {
 	case `serial`:
 		return `uint32`
 	case `serial2`:
-		return `int16`
+		return `uint16`
 	case `serial4`:
-		return `int32`
+		return `uint32`
 	case `serial8`:
-		return `int64`
+		return `uint64`
 	case `smallserial`:
 		return `uint16`
 	case `text`:
@@ -341,7 +341,7 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 
 var postgresCMD = &cobra.Command{
 	Use:   `postgres database table [-h]`,
-	Short: `An PostgresSQL schema generate tool for leopards`,
+	Short: `A PostgresSQL schema generate tool for leopards`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		return pgGenerate(cmd, args)

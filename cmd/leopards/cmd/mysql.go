@@ -198,7 +198,7 @@ func generate(cmd *cobra.Command, args []string) error {
 
 var mysqlCMD = &cobra.Command{
 	Use:   `mysql database table [-h]`,
-	Short: `An MySQL schema generate tool for leopards`,
+	Short: `A MySQL schema generate tool for leopards`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		return generate(cmd, args)
