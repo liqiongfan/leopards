@@ -177,6 +177,17 @@ func tag(name, comment string) string {
 	return fmt.Sprintf("`json:\"%s\"` // %s", name, comment)
 }
 
+func tagPtr(name string, comment *string) string {
+	newComment := ``
+	if comment != nil {
+		for _, c := range "\r\n" {
+			*comment = strings.ReplaceAll(*comment, string(c), ` `)
+		}
+		newComment = *comment
+	}
+	return fmt.Sprintf("`json:\"%s\"` // %s", name, newComment)
+}
+
 func pad(name string, length int) string {
 	if length-len(name) <= 0 {
 		return ``
@@ -189,6 +200,32 @@ func trace(err error) error {
 		fmt.Printf("trace: %v\n", err)
 	}
 	return nil
+}
+
+func getPGInfo(cmd *cobra.Command) *Info {
+	i := &Info{
+		User:     os.Getenv(`PG_USER`),
+		Password: os.Getenv(`PG_PASSWORD`),
+		Host:     os.Getenv(`PG_HOST`),
+		Port:     os.Getenv(`PG_PORT`),
+	}
+
+	flags := []string{`user`, `password`, `host`, `port`}
+	for _, flag := range flags {
+		v, _ := cmd.Flags().GetString(flag)
+		switch flag {
+		case `user`:
+			i.User = v
+		case `password`:
+			i.Password = v
+		case `host`:
+			i.Host = v
+		case `port`:
+			i.Port = v
+		}
+	}
+
+	return i
 }
 
 func getInfo(cmd *cobra.Command) *Info {
@@ -224,7 +261,7 @@ func getInfo(cmd *cobra.Command) *Info {
 
 var RootCMD = &cobra.Command{
 	Use:   `leopards`,
-	Short: `An funny tool for DB schema`,
+	Short: `A funny tool for DB schema`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},
@@ -232,4 +269,5 @@ var RootCMD = &cobra.Command{
 
 func init() {
 	RootCMD.AddCommand(mysqlCMD)
+	RootCMD.AddCommand(postgresCMD)
 }

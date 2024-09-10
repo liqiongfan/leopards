@@ -449,3 +449,13 @@ func (b *DB) Insert() *InsertBuilder {
 func (b *DB) Delete() *DeleteBuilder {
 	return Dialect(b.dialect).Delete(b, ``)
 }
+
+// Table returns a new table selector.
+//
+//	t1 := Table("users").As("u")
+//	return Select(t1.C("name"))
+func (b *DB) Table(name string) *SelectTable {
+	t := &SelectTable{quote: true, name: name}
+	t.SetDialect(b.dialect)
+	return t
+}

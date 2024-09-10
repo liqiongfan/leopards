@@ -3,7 +3,7 @@
 A tool for generate database struct for database.
 
 + [x] MySQL      yes
-+ [ ] Postgres   planing
++ [x] Postgres   planing
 + [ ] SQLite     planing
 
 ### MySQL
