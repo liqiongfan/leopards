@@ -165,7 +165,7 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 		Host:     info.Host,
 		Port:     info.Port,
 		Database: args[0],
-		Debug:    true,
+		Debug:    false,
 		Dialect:  leopards.Postgres,
 	}.Open()
 	if err != nil {
