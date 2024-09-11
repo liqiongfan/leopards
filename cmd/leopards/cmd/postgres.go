@@ -21,6 +21,7 @@ type PgTable struct {
 	Columns         []PgColumn
 	MaxColumnLength int
 	MaxTypeLength   int
+	MaxNameLength   int
 }
 
 type PgColumn struct {
@@ -55,7 +56,7 @@ const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ emit $value.Comment }}
 type {{ camel $value.TableName }} struct { 
-{{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .IsNullAble .UdtName }}{{ pad (type .DataType .IsNullAble .UdtName) $value.MaxTypeLength }}  {{ tag .ColumnName .Comment  }}
+{{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .IsNullAble .UdtName }}{{ pad (type .DataType .IsNullAble .UdtName) $value.MaxTypeLength }}  {{ tag .ColumnName .Comment $value.MaxNameLength }}
 {{ end -}} 
 }
 {{ end }}
@@ -269,6 +270,9 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 			}
 			if length := len(PGType(column.DataType, column.IsNullAble, column.UdtName)); length > tables[i].MaxTypeLength {
 				tables[i].MaxTypeLength = length
+			}
+			if length := len(*column.ColumnName); length > tables[i].MaxNameLength {
+				tables[i].MaxNameLength = length
 			}
 
 		}

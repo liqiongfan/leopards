@@ -170,14 +170,16 @@ func Type(typ *string, columnType, isNullable string) string {
 	return r
 }
 
-func tag(name, comment string) string {
+func tag(name, comment string, padLength int) string {
 	for _, c := range "\r\n" {
 		comment = strings.ReplaceAll(comment, string(c), ` `)
 	}
-	return fmt.Sprintf("`json:\"%s\"` // %s", name, comment)
+	padLength -= len(name)
+	padStr := strings.Repeat(` `, padLength)
+	return fmt.Sprintf("`json:\"%s\"` %s// %s", name, padStr, comment)
 }
 
-func tagPtr(name string, comment *string) string {
+func tagPtr(name string, comment *string, padLength int) string {
 	newComment := ``
 	if comment != nil {
 		for _, c := range "\r\n" {
@@ -185,7 +187,9 @@ func tagPtr(name string, comment *string) string {
 		}
 		newComment = *comment
 	}
-	return fmt.Sprintf("`json:\"%s\"` // %s", name, newComment)
+	padLength -= len(name)
+	padStr := strings.Repeat(` `, padLength)
+	return fmt.Sprintf("`json:\"%s\"` %s// %s", name, padStr, newComment)
 }
 
 func pad(name string, length int) string {

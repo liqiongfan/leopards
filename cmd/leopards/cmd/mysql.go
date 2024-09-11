@@ -46,17 +46,17 @@ const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ $value.Comment }}
 type {{ camel $value.TableName }} struct { 
-{{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment  }}
+{{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment $value.MaxNameLength  }}
 {{ end -}} 
 }
 {{ end }}
 `
 
 type Table struct {
-	TableName                      string `json:"TABLE_NAME"`
-	Comment                        string `json:"TABLE_COMMENT"`
-	Columns                        []Column
-	MaxColumnLength, MaxTypeLength int
+	TableName                                     string `json:"TABLE_NAME"`
+	Comment                                       string `json:"TABLE_COMMENT"`
+	Columns                                       []Column
+	MaxColumnLength, MaxTypeLength, MaxNameLength int
 }
 
 func generate(cmd *cobra.Command, args []string) error {
@@ -127,6 +127,9 @@ func generate(cmd *cobra.Command, args []string) error {
 			}
 			if length := len(Type(column.DataType, column.ColumnType, column.IsNullable)); length > tables[i].MaxTypeLength {
 				tables[i].MaxTypeLength = length
+			}
+			if length := len(*column.ColumnName); length > tables[i].MaxNameLength {
+				tables[i].MaxNameLength = length
 			}
 		}
 		tables[i].Columns = columns
