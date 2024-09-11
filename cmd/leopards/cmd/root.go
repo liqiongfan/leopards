@@ -68,6 +68,9 @@ func camel(str *string) string {
 	var upperNext = true
 	for _, c := range v {
 		switch {
+		case c == '！' || c == '￥' || c == '…' || c == '（' || c == '）' || c == '【' || c == '】' ||
+			c == '、' || c == '？' || c == '《' || c == '》' || c == '“' || c == '：':
+			continue
 		case c == '_' && upperNext:
 			upperNext = false
 		case c == '_' && !upperNext:
