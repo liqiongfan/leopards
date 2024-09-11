@@ -4303,3 +4303,14 @@ func isModifier(s string) bool {
 	}
 	return false
 }
+
+// FieldsIn In quick methods
+func FieldsIn[T any](col string, val ...T) func(s *Selector) {
+	return func(s *Selector) {
+		args := make([]any, len(val))
+		for i, v := range val {
+			args[i] = v
+		}
+		s.Where(In(col, args...))
+	}
+}
