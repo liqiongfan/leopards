@@ -119,7 +119,7 @@ func generate(cmd *cobra.Command, args []string) error {
 				flags[camelName] = struct{}{}
 			}
 
-			if Type(column.DataType, column.ColumnComment, column.IsNullable) == `time.Time` {
+			if strings.Contains(Type(column.DataType, column.ColumnComment, column.IsNullable), `time.Time`) {
 				needImportTime = true
 			}
 			if length := len(camel(column.CamelName)); length > tables[i].MaxColumnLength {

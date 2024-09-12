@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 
@@ -183,10 +184,23 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 
 	schema, _ := cmd.Flags().GetString(`schema`)
 
+	database := args[0]
+	tableName := args[1]
+
 	tables := make([]PgTable, 0, 20)
 	t1 := orm.Table(`tables`).Schema(`information_schema`).As(`tb`)
 	t2 := orm.Table(`pg_class`)
 	t3 := orm.Table(`pg_description`).As(`d`)
+
+	predicates := []*leopards.Predicate{
+		leopards.EQ(t1.C(`table_catalog`), database),
+		leopards.EQ(t1.C(`table_schema`), schema),
+	}
+
+	if tableName != `*` {
+		predicates = append(predicates, leopards.EQ(t1.C(`table_name`), tableName))
+	}
+
 	err = orm.Query().
 		Select(
 			t1.C(`table_catalog`),
@@ -201,7 +215,7 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 		On(t3.C(`objoid`), t2.C(`oid`)).OnP(leopards.EQ(t3.C(`objsubid`), 0)).
 		Where(
 			leopards.And(
-				leopards.EQ(t1.C(`table_schema`), schema),
+				predicates...,
 			),
 		).
 		Scan(cmd.Context(), &tables)
@@ -262,7 +276,7 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 				flags[camelName] = struct{}{}
 			}
 
-			if PGType(column.DataType, column.IsNullAble, column.UdtName) == `time.Time` {
+			if strings.Contains(PGType(column.DataType, column.IsNullAble, column.UdtName), `time.Time`) {
 				needImportTime = true
 			}
 			if length := len(camel(column.CamelName)); length > tables[i].MaxColumnLength {
