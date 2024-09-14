@@ -359,10 +359,7 @@ func DSN(opt *OpenOptions) string {
 	case MySQL:
 		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s&charset=` + opt.Charset
 	case Postgres: // host=<host> port=<port> user=<user> dbname=<database> password=<pass>
-		if strings.Contains(opt.Charset, `utf8mb4`) {
-			opt.Charset = `UTF8`
-		}
-		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User + ` dbname=` + opt.Database + ` password=` + opt.Password + ` client_encoding=` + opt.Charset
+		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User + ` dbname=` + opt.Database + ` password=` + opt.Password
 	case SQLite: //  file:ent?mode=memory&cache=shared&_fk=1
 		return opt.FileForSQLite + `?mode=memory&cache=shared`
 	case Gremlin: // http://localhost:8182
