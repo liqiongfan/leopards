@@ -66,6 +66,7 @@ func generate(cmd *cobra.Command, args []string) error {
 		Host:     info.Host,
 		Port:     info.Port,
 		Debug:    false,
+		Database: `information_schema`,
 		Dialect:  leopards.MySQL,
 		Charset:  info.Charset,
 	})
