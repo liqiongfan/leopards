@@ -338,6 +338,7 @@ type OpenOptions struct {
 	Debug         bool   // 调试模式
 	Dialect       string // 数据库类型, 可选 leopards.MySQL | leopards.SQLite | leopards.Postgres | leopards.Gremlin
 	FileForSQLite string // SQLite 数据库需要配置, 其他类型忽略
+	Charset       string
 }
 
 // Open 打开链接获取一个DB操作类
@@ -356,7 +357,7 @@ func (p OpenOptions) Open() (*DB, error) {
 func DSN(opt *OpenOptions) string {
 	switch opt.Dialect {
 	case MySQL:
-		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`
+		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s&charset=` + opt.Charset
 	case Postgres: // host=<host> port=<port> user=<user> dbname=<database> password=<pass>
 		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User + ` dbname=` + opt.Database + ` password=` + opt.Password
 	case SQLite: //  file:ent?mode=memory&cache=shared&_fk=1

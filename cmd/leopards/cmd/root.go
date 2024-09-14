@@ -9,7 +9,7 @@ import (
 )
 
 type Info struct {
-	User, Password, Host, Port string
+	User, Password, Host, Port, Charset string
 }
 
 func enum(columnName *string, dataType *string, columnType string) string {
@@ -215,9 +215,10 @@ func getPGInfo(cmd *cobra.Command) *Info {
 		Password: os.Getenv(`PG_PASSWORD`),
 		Host:     os.Getenv(`PG_HOST`),
 		Port:     os.Getenv(`PG_PORT`),
+		Charset:  os.Getenv(`PG_CHARSET`),
 	}
 
-	flags := []string{`user`, `password`, `host`, `port`}
+	flags := []string{`user`, `password`, `host`, `port`, `charset`}
 	for _, flag := range flags {
 		v, _ := cmd.Flags().GetString(flag)
 		switch flag {
@@ -229,6 +230,8 @@ func getPGInfo(cmd *cobra.Command) *Info {
 			i.Host = v
 		case `port`:
 			i.Port = v
+		case `charset`:
+			i.Charset = v
 		}
 	}
 
@@ -241,6 +244,7 @@ func getInfo(cmd *cobra.Command) *Info {
 		Password: os.Getenv(`MYSQL_PASSWORD`),
 		Host:     os.Getenv(`MYSQL_HOST`),
 		Port:     os.Getenv(`MYSQL_PORT`),
+		Charset:  os.Getenv(`MYSQL_CHARSET`),
 	}
 
 	u, _ := cmd.Flags().GetString(`user`)
@@ -261,6 +265,11 @@ func getInfo(cmd *cobra.Command) *Info {
 	port, _ := cmd.Flags().GetString(`port`)
 	if port != `` {
 		r.Port = port
+	}
+
+	charset, _ := cmd.Flags().GetString(`charset`)
+	if port != `` {
+		r.Charset = charset
 	}
 
 	return r

@@ -3,7 +3,6 @@ package cmd
 import (
 	bytes2 "bytes"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,13 +60,15 @@ type Table struct {
 
 func generate(cmd *cobra.Command, args []string) error {
 	info := getInfo(cmd)
-	dsn := fmt.Sprintf(
-		`%s:%s@tcp(%s:%s)/information_schema?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s`,
-		info.User,
-		info.Password,
-		info.Host,
-		info.Port,
-	)
+	dsn := leopards.DSN(&leopards.OpenOptions{
+		User:     info.User,
+		Password: info.Password,
+		Host:     info.Host,
+		Port:     info.Port,
+		Debug:    false,
+		Dialect:  leopards.MySQL,
+		Charset:  info.Charset,
+	})
 
 	db, err := leopards.Open(leopards.MySQL, dsn)
 	if err != nil {
@@ -215,5 +216,6 @@ func init() {
 	mysqlCMD.Flags().StringP(`password`, `P`, ``, `mysql database password`)
 	mysqlCMD.Flags().StringP(`host`, `H`, ``, `mysql database host`)
 	mysqlCMD.Flags().StringP(`port`, `p`, `3306`, `mysql database port`)
+	mysqlCMD.Flags().StringP(`charset`, `C`, `utf8mb4,utf8`, `mysql database charset`)
 	mysqlCMD.Flags().StringP(`out`, `o`, ``, `output path`)
 }
