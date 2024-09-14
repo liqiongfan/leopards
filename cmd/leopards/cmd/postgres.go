@@ -367,18 +367,20 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 
 var postgresCMD = &cobra.Command{
 	Use:   `postgres database table [-h]`,
-	Short: `A PostgresSQL schema generate tool for leopards`,
+	Short: `A PostgreSQL schema generate tool for leopards`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
+		if len(args) != 2 {
+			return cmd.Help()
+		}
 		return pgGenerate(cmd, args)
 	},
 }
 
 func init() {
-	postgresCMD.Flags().StringP(`user`, `U`, ``, `PostgresSQL database username`)
-	postgresCMD.Flags().StringP(`password`, `P`, ``, `PostgresSQL database password`)
-	postgresCMD.Flags().StringP(`host`, `H`, ``, `PostgresSQL database host`)
-	postgresCMD.Flags().StringP(`port`, `p`, `5432`, `PostgresSQL database port`)
-	postgresCMD.Flags().StringP(`schema`, `s`, `public`, `PostgresSQL schema, default public`)
+	postgresCMD.Flags().StringP(`user`, `U`, ``, `PostgreSQL database username`)
+	postgresCMD.Flags().StringP(`password`, `P`, ``, `PostgrsSQL database password`)
+	postgresCMD.Flags().StringP(`host`, `H`, ``, `PostgreSQL database host`)
+	postgresCMD.Flags().StringP(`port`, `p`, `5432`, `PostgreSQL database port`)
+	postgresCMD.Flags().StringP(`schema`, `s`, `public`, `PostgreSQL schema, default public`)
 	postgresCMD.Flags().StringP(`out`, `o`, ``, `output path`)
 }

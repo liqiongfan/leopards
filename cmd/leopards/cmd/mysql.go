@@ -203,7 +203,9 @@ var mysqlCMD = &cobra.Command{
 	Use:   `mysql database table [-h]`,
 	Short: `A MySQL schema generate tool for leopards`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
+		if len(args) != 2 {
+			return cmd.Help()
+		}
 		return generate(cmd, args)
 	},
 }
