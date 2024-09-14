@@ -58,5 +58,5 @@ leopards postgres --host=xxx --port=xxx --user=xxx --pasword=xxx database tables
 `tables` 参数支持逗号分隔，或者 `*` 标识全部表
 
 
-> [TIPS]
+> [!TIP]
 > Linux & mac 下 * 需要用 \* 替代 以免展开
