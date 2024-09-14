@@ -59,4 +59,4 @@ leopards postgres --host=xxx --port=xxx --user=xxx --pasword=xxx database tables
 
 
 > [!TIP]
-> Linux & mac 下 * 需要用 \* 替代 以免展开
+> Linux & mac 下 * 需要用 \\* 替代 以免展开
