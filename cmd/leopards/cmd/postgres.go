@@ -177,6 +177,7 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 		Database: args[0],
 		Debug:    false,
 		Dialect:  leopards.Postgres,
+		Charset:  info.Charset,
 	}.Open()
 	if err != nil {
 		return err
