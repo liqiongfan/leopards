@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -723,6 +725,31 @@ func (i *InsertBuilder) Set(column string, v any) *InsertBuilder {
 		i.values[0] = append(i.values[0], v)
 	}
 	return i
+}
+
+// StringOmitErr turn value into string
+func StringOmitErr(value any) string {
+	v := reflect.ValueOf(value)
+	t := reflect.ValueOf(value)
+
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	switch v.Kind() {
+	case reflect.Map, reflect.Struct, reflect.Array, reflect.Interface:
+		buf, err := json.Marshal(value)
+		if err != nil {
+			return ``
+		}
+		return string(buf)
+	default:
+		return fmt.Sprintf(`%v`, value)
+	}
 }
 
 // SetMap is a syntactic sugar API for inserting only one row.
