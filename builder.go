@@ -357,6 +357,9 @@ func (p OpenOptions) Open() (*DB, error) {
 func DSN(opt *OpenOptions) string {
 	switch opt.Dialect {
 	case MySQL:
+		if opt.Charset == `` {
+			opt.Charset = `utf8mb4,utf8`
+		}
 		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s&charset=` + opt.Charset
 	case Postgres: // host=<host> port=<port> user=<user> dbname=<database> password=<pass>
 		if strings.Contains(opt.Charset, `utf8mb4`) || opt.Charset == `` {
