@@ -4,6 +4,7 @@ import (
 	bytes2 "bytes"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -67,23 +68,56 @@ type {{ camel $value.TableName }} struct {
 
 func (orm *{{camel $value.TableName}}) Query() *leopards.Selector {
 {{ if ne $value.PRI "" }}	return orm.DB.Query().From({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
-{{- else }}	return orm.DB.Query().From({{ camel $value.TableName }}Table).WhereMap(map[string]any{ 
-{{ range $value.Columns }}        "{{ .ColumnName}}": {{ if eq .IsNullable "YES" }}*{{ end }}orm.{{camel .ColumnName}},
-{{ end }}    }){{- end }}
+{{- else }}	
+	var m = map[string]any{
+{{ range $value.Columns }}        {{ if ne .IsNullable "YES" }}"{{ .ColumnName}}": orm.{{camel .ColumnName}},{{end}}
+{{ end }}	
+    }
+
+{{ range $value.Columns -}} {{ if eq .IsNullable "YES" }}
+	if orm.{{camel .ColumnName}} != nil {
+		m["{{ .ColumnName}}"] = *orm.{{camel .ColumnName}}
+    }
+{{ end -}}
+{{- end }}	
+    
+	return orm.DB.Query().From({{ camel $value.TableName }}Table).WhereMap(m){{- end }}
 }
 
 func (orm *{{camel $value.TableName}}) Update() *leopards.UpdateBuilder {
 {{ if ne $value.PRI "" }}	return orm.DB.Update().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
-{{- else }} return orm.DB.Update().Table({{ camel $value.TableName }}Table).WhereMap(map[string]any{ 
-{{ range $value.Columns }}        "{{ .ColumnName}}": {{ if eq .IsNullable "YES" }}*{{ end }}orm.{{camel .ColumnName}},
-{{ end }}    }){{- end }}
+{{- else }} 
+	var m = map[string]any{
+{{ range $value.Columns }}        {{ if ne .IsNullable "YES" }}"{{ .ColumnName}}": orm.{{camel .ColumnName}},{{end}}
+{{ end }}	
+    }
+
+{{ range $value.Columns -}} {{ if eq .IsNullable "YES" }}
+	if orm.{{camel .ColumnName}} != nil {
+		m["{{ .ColumnName}}"] = *orm.{{camel .ColumnName}}
+    }
+{{ end -}}
+{{- end }}	
+    
+	return orm.DB.Update().Table({{ camel $value.TableName }}Table).WhereMap(m){{- end }}
 }
 
 func (orm *{{camel $value.TableName}}) Delete() *leopards.DeleteBuilder {
 {{ if ne $value.PRI "" }}	return orm.DB.Delete().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
-{{- else }} return orm.DB.Delete().Table({{ camel $value.TableName }}Table).WhereMap(map[string]any{ 
-{{ range $value.Columns }}        "{{ .ColumnName}}": {{ if eq .IsNullable "YES" }}*{{ end }}orm.{{camel .ColumnName}},
-{{ end }}    }){{- end }}
+{{- else }} 
+		var m = map[string]any{
+{{ range $value.Columns }}        {{ if ne .IsNullable "YES" }}"{{ .ColumnName}}": orm.{{camel .ColumnName}},{{end}}
+{{ end }}	
+    }
+
+{{ range $value.Columns -}} {{ if eq .IsNullable "YES" }}
+	if orm.{{camel .ColumnName}} != nil {
+		m["{{ .ColumnName}}"] = *orm.{{camel .ColumnName}}
+    }
+{{ end -}}
+{{- end }}	
+    
+	return orm.DB.Delete().Table({{ camel $value.TableName }}Table).WhereMap(m){{- end }}
 }
 
 func (orm *{{camel $value.TableName}}) Insert() *leopards.InsertBuilder {
@@ -389,8 +423,12 @@ func pgGenerate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	defer f.Close()
 	_, _ = f.WriteString(bytes.String())
+
+	f.Close()
+
+	command := exec.Command(`gofmt`,`-s`, `-w`, output)
+	_ = command.Run()
 
 	return nil
 }
