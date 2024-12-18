@@ -72,12 +72,12 @@ func (orm *{{camel $value.TableName}}) Query() *leopards.Selector {
 
 func (orm *{{camel $value.TableName}}) Update() *leopards.UpdateBuilder {
 {{ if ne $value.PRI "" }}	return orm.DB.Update().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
-{{- else }}    return orm.DB.Update().From({{ camel $value.TableName }}Table){{- end }}
+{{- else }}    return orm.DB.Update().Table({{ camel $value.TableName }}Table){{- end }}
 }
 
 func (orm *{{camel $value.TableName}}) Delete() *leopards.DeleteBuilder {
 {{ if ne $value.PRI "" }}	return orm.DB.Delete().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
-{{- else }}    return orm.DB.Delete().From({{ camel $value.TableName }}Table){{- end }}
+{{- else }}    return orm.DB.Delete().Table({{ camel $value.TableName }}Table){{- end }}
 }
 
 func (orm *{{camel $value.TableName}}) Insert() *leopards.InsertBuilder {
