@@ -1222,6 +1222,15 @@ func (u *UpdateBuilder) Where(p *Predicate) *UpdateBuilder {
 	return u
 }
 
+// WhereMap adds a where predicate for update statement.
+func (u *UpdateBuilder) WhereMap(p map[string]any) *UpdateBuilder {
+	var w []*Predicate
+	for key, value := range p {
+		w = append(w, EQ(key, value))
+	}
+	return u.Where(And(w...))
+}
+
 // FromSelect makes it possible to update entities that match the sub-query.
 func (u *UpdateBuilder) FromSelect(s *Selector) *UpdateBuilder {
 	u.Where(s.where)
