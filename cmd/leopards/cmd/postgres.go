@@ -19,6 +19,7 @@ type PgTable struct {
 	TableName       string  `json:"table_name"`
 	TableType       string  `json:"table_type"`
 	Comment         *string `json:"description"`
+	PRI             string
 	Columns         []PgColumn
 	MaxColumnLength int
 	MaxTypeLength   int
@@ -50,6 +51,8 @@ const TemplatePGStruct = `
 // created by leopards at: {{ .Time }}
 // 
 
+import "github.com/liqiongfan/leopards"
+
 {{ range $key, $value := .Data }}
 
 // {{ camel $value.TableName }}Table {{ emit $value.Comment }}
@@ -57,8 +60,28 @@ const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ emit $value.Comment }}
 type {{ camel $value.TableName }} struct { 
+	*leopards.DB
 {{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .IsNullAble .UdtName }}{{ pad (type .DataType .IsNullAble .UdtName) $value.MaxTypeLength }}  {{ tag .ColumnName .Comment $value.MaxNameLength }}
 {{ end -}} 
+}
+
+func (orm *{{camel $value.TableName}}) Query() *leopards.Selector {
+{{ if ne $value.PRI "" }}	return orm.DB.Query().From({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}	return orm.DB.Query().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Update() *leopards.UpdateBuilder {
+{{ if ne $value.PRI "" }}	return orm.DB.Update().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}    return orm.DB.Update().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Delete() *leopards.DeleteBuilder {
+{{ if ne $value.PRI "" }}	return orm.DB.Delete().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}    return orm.DB.Delete().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Insert() *leopards.InsertBuilder {
+	return orm.DB.Insert().Table({{ camel $value.TableName }}Table)
 }
 {{ end }}
 `

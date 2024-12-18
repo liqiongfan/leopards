@@ -1,3 +1,4 @@
+// Package leopards is a simple ORM for golang
 package leopards
 
 import (
@@ -27,6 +28,7 @@ func (rs *rowScan) values() []any {
 	return vs
 }
 
+// DB is a wrapper around sql.DB
 type DB struct {
 	driver *sql.DB
 
@@ -34,6 +36,7 @@ type DB struct {
 	debug   bool
 	dialect string
 
+	// interceptors
 	beforeQuery []func(*Selector)
 	afterQuery  []func(*Selector, any)
 
@@ -47,34 +50,42 @@ type DB struct {
 	afterDelete  []func(*DeleteBuilder, any)
 }
 
+// InterceptorsQuery allows you to add interceptors to all queries before each query
 func (b *DB) InterceptorsQuery(iq func(*Selector)) {
 	b.beforeQuery = append(b.beforeQuery, iq)
 }
 
+// InterceptorsAfterQuery allows you to add interceptors to all queries after each query
 func (b *DB) InterceptorsAfterQuery(ia func(*Selector, any)) {
 	b.afterQuery = append(b.afterQuery, ia)
 }
 
+// InterceptorsInsert allows you to add interceptors to all queries before each insert
 func (b *DB) InterceptorsInsert(ii func(*InsertBuilder)) {
 	b.beforeInsert = append(b.beforeInsert, ii)
 }
 
+// InterceptorsAfterInsert allows you to add interceptors to all queries after each insert
 func (b *DB) InterceptorsAfterInsert(ii func(*InsertBuilder, any)) {
 	b.afterInsert = append(b.afterInsert, ii)
 }
 
+// InterceptorsUpdate allows you to add interceptors to all queries before each update
 func (b *DB) InterceptorsUpdate(ii func(*UpdateBuilder)) {
 	b.beforeUpdate = append(b.beforeUpdate, ii)
 }
 
+// InterceptorsAfterUpdate allows you to add interceptors to all queries after each update
 func (b *DB) InterceptorsAfterUpdate(ii func(*UpdateBuilder, any)) {
 	b.afterUpdate = append(b.afterUpdate, ii)
 }
 
+// InterceptorsDelete allows you to add interceptors to all queries before each delete
 func (b *DB) InterceptorsDelete(ii func(*DeleteBuilder)) {
 	b.beforeDelete = append(b.beforeDelete, ii)
 }
 
+// InterceptorsAfterDelete allows you to add interceptors to all queries after each delete
 func (b *DB) InterceptorsAfterDelete(ii func(*DeleteBuilder, any)) {
 	b.afterDelete = append(b.afterDelete, ii)
 }
@@ -152,6 +163,21 @@ func (b *DB) scanStruct(typ reflect.Type, columns []string, ctypes []*sql.Column
 		rs.types = append(rs.types, rtype)
 	}
 
+	var needCopyDBHandler int = -1
+	for i := 0; i < typ.NumField(); i++ {
+		f := typ.Field(i)
+
+		switch {
+		case f.PkgPath != `` || !f.Anonymous:
+			continue
+		}
+
+		if f.Type == reflect.TypeOf(b) {
+			needCopyDBHandler = i
+			break
+		}
+	}
+
 	rs.value = func(vs ...any) (reflect.Value, error) {
 		dest := reflect.New(typ).Elem()
 		for i, v := range vs {
@@ -184,6 +210,9 @@ func (b *DB) scanStruct(typ reflect.Type, columns []string, ctypes []*sql.Column
 			dv.Set(rv)
 		}
 
+		if needCopyDBHandler != -1 {
+			dest.Field(needCopyDBHandler).Set(reflect.ValueOf(b))
+		}
 		return dest, nil
 	}
 
@@ -347,25 +376,24 @@ func (p OpenOptions) Open() (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	b := &DB{}
-	b.driver = dri
-	b.dialect = p.Dialect
-	b.debug = p.Debug
-	return b, nil
+	return &DB{driver: dri, dialect: p.Dialect, debug: p.Debug}, nil
 }
 
+// DSN Generate dsn for database connecting
 func DSN(opt *OpenOptions) string {
 	switch opt.Dialect {
 	case MySQL:
 		if opt.Charset == `` {
 			opt.Charset = `utf8mb4,utf8`
 		}
-		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` + opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s&charset=` + opt.Charset
+		return opt.User + `:` + opt.Password + `@(` + opt.Host + `:` + opt.Port + `)/` +
+			opt.Database + `?interpolateParams=true&loc=Local&parseTime=True&timeTruncate=1s&charset=` + opt.Charset
 	case Postgres: // host=<host> port=<port> user=<user> dbname=<database> password=<pass>
 		if strings.Contains(opt.Charset, `utf8mb4`) || opt.Charset == `` {
 			opt.Charset = `UTF8`
 		}
-		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User + ` dbname=` + opt.Database + ` password=` + opt.Password
+		return `host=` + opt.Host + ` port=` + opt.Port + ` user=` + opt.User +
+			` dbname=` + opt.Database + ` password=` + opt.Password
 	case SQLite: //  file:ent?mode=memory&cache=shared&_fk=1
 		return opt.FileForSQLite + `?mode=memory&cache=shared`
 	case Gremlin: // http://localhost:8182
@@ -380,35 +408,7 @@ func Open(dialect string, dsn string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	b := &DB{}
-	b.driver = dri
-	b.dialect = dialect
-	return b, nil
-}
-
-func OpenWithInfo(dialect, host, port, user, password, database string) (*DB, error) {
-	return Open(
-		dialect,
-		DSN(&OpenOptions{
-			User:     user,
-			Password: password,
-			Host:     host,
-			Port:     port,
-			Database: database,
-			Debug:    false,
-			Dialect:  dialect,
-		}),
-	)
-}
-
-func OpenWithDebug(dialect, dsn string) (*DB, error) {
-	db, err := Open(dialect, dsn)
-	if err != nil {
-		return nil, err
-	}
-	db.debug = true
-
-	return db, nil
+	return &DB{driver: dri, dialect: dialect}, nil
 }
 
 func (b *DB) Commit(ctx context.Context) error {

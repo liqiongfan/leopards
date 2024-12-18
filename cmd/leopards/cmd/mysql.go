@@ -36,6 +36,8 @@ const TemplateStruct = `
 // created by leopards at: {{ .Time }}
 // 
 
+import "github.com/liqiongfan/leopards"
+
 {{ range $key, $value := .Data }}
 {{- range .Columns }} {{ enum .ColumnName .DataType .ColumnType }}    
 {{- end }}
@@ -45,8 +47,28 @@ const {{ camel $value.TableName }}Table = "{{ $value.TableName }}"
 
 // {{ camel $value.TableName }} {{ $value.Comment }}
 type {{ camel $value.TableName }} struct { 
+	*leopards.DB
 {{ range .Columns }}    {{ camel .CamelName }}{{ pad (camel .ColumnName) $value.MaxColumnLength }} {{ type .DataType .ColumnType .IsNullable }}{{ pad (type .DataType .ColumnType .IsNullable) $value.MaxTypeLength }}  {{ tag .ColumnName .ColumnComment $value.MaxNameLength  }}
 {{ end -}} 
+}
+
+func (orm *{{camel $value.TableName}}) Query() *leopards.Selector {
+{{ if ne $value.PRI "" }}	return orm.DB.Query().From({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}	return orm.DB.Query().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Update() *leopards.UpdateBuilder {
+{{ if ne $value.PRI "" }}	return orm.DB.Update().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}    return orm.DB.Update().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Delete() *leopards.DeleteBuilder {
+{{ if ne $value.PRI "" }}	return orm.DB.Delete().Table({{ camel $value.TableName }}Table).Where(leopards.EQ("{{ $value.PRI }}", orm.{{camel $value.PRI}}))
+{{- else }}    return orm.DB.Delete().From({{ camel $value.TableName }}Table){{- end }}
+}
+
+func (orm *{{camel $value.TableName}}) Insert() *leopards.InsertBuilder {
+	return orm.DB.Insert().Table({{ camel $value.TableName }}Table)
 }
 {{ end }}
 `
@@ -55,6 +77,7 @@ type Table struct {
 	TableName                                     string `json:"TABLE_NAME"`
 	Comment                                       string `json:"TABLE_COMMENT"`
 	Columns                                       []Column
+	PRI                                           string
 	MaxColumnLength, MaxTypeLength, MaxNameLength int
 }
 
@@ -89,8 +112,7 @@ func generate(cmd *cobra.Command, args []string) error {
 	}
 
 	tables := make([]Table, 0, 20)
-	err = query.
-		Scan(cmd.Context(), &tables)
+	err = query.Scan(cmd.Context(), &tables)
 	if err != nil {
 		return err
 	}
@@ -119,6 +141,10 @@ func generate(cmd *cobra.Command, args []string) error {
 				columns[j].CamelName = &tName
 			} else {
 				flags[camelName] = struct{}{}
+			}
+
+			if strings.ToLower(column.ColumnKey) == `pri` && column.ColumnName != nil {
+				tables[i].PRI = *column.ColumnName
 			}
 
 			if strings.Contains(Type(column.DataType, column.ColumnComment, column.IsNullable), `time.Time`) {
