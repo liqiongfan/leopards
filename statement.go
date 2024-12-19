@@ -672,7 +672,6 @@ type InsertBuilder struct {
 //		Values("foo", 20)
 //
 // Note: Insert inserts all values in one batch.
-func Insert(table string) *InsertBuilder { return &InsertBuilder{table: table} }
 
 func (i *InsertBuilder) Save(ctx context.Context) (sql.Result, error) {
 
@@ -1091,7 +1090,7 @@ func (i *InsertBuilder) writeConflict(b *Builder) {
 	if len(i.conflict.action.update) == 0 {
 		b.AddError(errors.New("missing action for 'DO UPDATE SET' clause"))
 	}
-	u := &UpdateSet{UpdateBuilder: Dialect(i.dialect).Update(i.driver, i.table), columns: i.columns}
+	u := &UpdateSet{UpdateBuilder: Dialect(i.dialect).Update(i.driver).Table(i.table), columns: i.columns}
 	u.Builder = *b
 	for _, f := range i.conflict.action.update {
 		f(u)
@@ -1119,11 +1118,6 @@ type UpdateBuilder struct {
 
 	driver *DB
 }
-
-// Update creates a builder for the `UPDATE` statement.
-//
-//	Update("users").Set("name", "foo").Set("age", 10)
-func Update(table string) *UpdateBuilder { return &UpdateBuilder{table: table} }
 
 func (u *UpdateBuilder) Table(table string) *UpdateBuilder {
 	u.table = table
@@ -1354,7 +1348,6 @@ type DeleteBuilder struct {
 //				),
 //			),
 //		)
-func Delete(table string) *DeleteBuilder { return &DeleteBuilder{table: table} }
 
 func (d *DeleteBuilder) Exec(ctx context.Context) (sql.Result, error) {
 	for _, iter := range d.driver.beforeDelete {
@@ -4227,9 +4220,9 @@ func (d *DialectBuilder) Column(name string) *ColumnBuilder {
 // Insert creates a InsertBuilder for the configured dialect.
 //
 //	Dialect(dialect.Postgres).
-//		Insert("users").Columns("age").Values(1)
-func (d *DialectBuilder) Insert(driver *DB, table string) *InsertBuilder {
-	b := Insert(table)
+//		Insert().Table("users").Columns("age").Values(1)
+func (d *DialectBuilder) Insert(driver *DB) *InsertBuilder {
+	b := &InsertBuilder{}
 	b.SetDialect(d.dialect)
 	b.driver = driver
 	return b
@@ -4238,9 +4231,9 @@ func (d *DialectBuilder) Insert(driver *DB, table string) *InsertBuilder {
 // Update creates a UpdateBuilder for the configured dialect.
 //
 //	Dialect(dialect.Postgres).
-//		Update("users").Set("name", "foo")
-func (d *DialectBuilder) Update(driver *DB, table string) *UpdateBuilder {
-	b := Update(table)
+//		Update().Table("users").Set("name", "foo")
+func (d *DialectBuilder) Update(driver *DB) *UpdateBuilder {
+	b := &UpdateBuilder{}
 	b.SetDialect(d.dialect)
 	b.driver = driver
 	return b
@@ -4250,8 +4243,8 @@ func (d *DialectBuilder) Update(driver *DB, table string) *UpdateBuilder {
 //
 //	Dialect(dialect.Postgres).
 //		Delete().From("users")
-func (d *DialectBuilder) Delete(driver *DB, table string) *DeleteBuilder {
-	b := Delete(table)
+func (d *DialectBuilder) Delete(driver *DB) *DeleteBuilder {
+	b := &DeleteBuilder{}
 	b.SetDialect(d.dialect)
 	b.driver = driver
 	return b

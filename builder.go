@@ -28,14 +28,7 @@ func (rs *rowScan) values() []any {
 	return vs
 }
 
-// DB is a wrapper around sql.DB
-type DB struct {
-	driver *sql.DB
-
-	tx      *sql.Tx
-	debug   bool
-	dialect string
-
+type interceptors struct {
 	// interceptors
 	beforeQuery []func(*Selector)
 	afterQuery  []func(*Selector, any)
@@ -48,6 +41,17 @@ type DB struct {
 
 	beforeDelete []func(*DeleteBuilder)
 	afterDelete  []func(*DeleteBuilder, any)
+}
+
+// DB is a wrapper around sql.DB
+type DB struct {
+	driver *sql.DB
+
+	tx      *sql.Tx
+	debug   bool
+	dialect string
+
+	interceptors
 }
 
 // InterceptorsQuery allows you to add interceptors to all queries before each query
@@ -446,15 +450,15 @@ func (b *DB) Query() *Selector {
 }
 
 func (b *DB) Update() *UpdateBuilder {
-	return Dialect(b.dialect).Update(b, ``)
+	return Dialect(b.dialect).Update(b)
 }
 
 func (b *DB) Insert() *InsertBuilder {
-	return Dialect(b.dialect).Insert(b, ``)
+	return Dialect(b.dialect).Insert(b)
 }
 
 func (b *DB) Delete() *DeleteBuilder {
-	return Dialect(b.dialect).Delete(b, ``)
+	return Dialect(b.dialect).Delete(b)
 }
 
 // Table returns a new table selector.
